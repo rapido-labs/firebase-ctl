@@ -1,3 +1,4 @@
 /firebasectl
 .vscode
 .idea
+**/*.json
