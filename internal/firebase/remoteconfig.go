@@ -2,9 +2,8 @@ package firebase
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/roppenlabs/firebase-ctl/internal/config"
 
@@ -13,37 +12,43 @@ import (
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
 )
 
-func (rc RemoteConfigClient) GetLatestRemoteConfig(ctx context.Context) (*remoteconfig.Response, error) {
-	latestRemoteConfig, err := rc.Client.GetRemoteConfig("")
+
+func (cs ClientStore) GetLatestRemoteConfig(ctx context.Context) (*remoteconfig.Response, error) {
+	latestRemoteConfig, err := cs.RemoteConfigClient.GetRemoteConfig("")
 	if err != nil {
 		return nil, err
 	}
 	return latestRemoteConfig, err
 }
 
-func BackupRemoteConfig(remoteConfig *remoteconfig.Response, outputDir string) []error {
+func (cs ClientStore)BackupRemoteConfig(remoteConfig *remoteconfig.Response, outputDir string) []error {
 	errs := []error{}
-
 	conditions := remoteConfig.Conditions
-	conditionsDirPath := getDirPath(outputDir, config.ConditionsDir)
-	os.MkdirAll(conditionsDirPath, 0777)
+	conditionsDirPath := filepath.Join(outputDir, config.ConditionsDir)
+	cs.FsClient.MkdirAll(conditionsDirPath, 0744)
 
 	for _, condition := range conditions {
 		data, err := utils.JSONMarshal(condition)
 		if err != nil {
 			errs = append(errs, err)
+			continue
 		}
 
-		fileName := getFileName(conditionsDirPath, condition.Name)
-		err = ioutil.WriteFile(fileName, data, 0777)
+		fileName := filepath.Join(conditionsDirPath, condition.Name+".json")
+		file, err := cs.FsClient.OpenFile(fileName,os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644 )
+		if err!= nil{
+			errs = append(errs, err)
+			continue
+		}
+		_, err = file.Write(data)
 		if err != nil {
 			errs = append(errs, err)
 		}
 	}
 
 	parameters := remoteConfig.Parameters
-	parametersDirPath := getDirPath(outputDir, config.ParametersDir)
-	os.MkdirAll(parametersDirPath, 0777)
+	parametersDirPath := filepath.Join(outputDir, config.ParametersDir)
+	cs.FsClient.MkdirAll(parametersDirPath, 0744)
 
 	for key, parameter := range parameters {
 		data, err := utils.JSONMarshal(parameter)
@@ -51,20 +56,17 @@ func BackupRemoteConfig(remoteConfig *remoteconfig.Response, outputDir string) [
 			errs = append(errs, err)
 		}
 
-		fileName := getFileName(parametersDirPath, key)
-		err = ioutil.WriteFile(fileName, data, 0777)
+		fileName := filepath.Join(parametersDirPath, key+".json")
+		file, err := cs.FsClient.OpenFile(fileName,os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644 )
+		if err!= nil{
+			errs = append(errs, err)
+			continue
+		}
+		_, err = file.Write(data)
 		if err != nil {
 			errs = append(errs, err)
 		}
 	}
-
 	return errs
 }
 
-func getDirPath(parentDir, childDir string) string {
-	return fmt.Sprintf("%s/%s", parentDir, childDir)
-}
-
-func getFileName(dirName, fileName string) string {
-	return fmt.Sprintf("%s/%s.json", dirName, fileName)
-}

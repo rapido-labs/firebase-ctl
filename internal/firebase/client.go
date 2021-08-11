@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/afero"
 
 	"github.com/roppenlabs/firebase-ctl/internal/config"
 
@@ -11,9 +12,14 @@ import (
 	"google.golang.org/api/option"
 )
 
-type RemoteConfigClient struct {
-	Client remoteconfig.Client
+type ClientStore struct {
+	RemoteConfigClient ConfigClient
+	FsClient           afero.Fs
 }
+type ConfigClient interface {
+	GetRemoteConfig(versionNumber string) (*remoteconfig.Response, error)
+}
+
 
 func getFirebaseApp(ctx context.Context) (*firebase.App, error) {
 	firebaseConfig, err := config.GetFirebaseConfig()
@@ -30,15 +36,14 @@ func getFirebaseApp(ctx context.Context) (*firebase.App, error) {
 	return app, nil
 }
 
-func GetRemoteConfigClient(ctx context.Context) (*RemoteConfigClient, error) {
+func GetClientStore(ctx context.Context) (*ClientStore, error) {
 	firebaseApp, err := getFirebaseApp(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	client, err := firebaseApp.RemoteConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Error while getting remoteconfig client: %s", err.Error())
 	}
-	return &RemoteConfigClient{Client: *client}, nil
+	return &ClientStore{RemoteConfigClient: client, FsClient: afero.NewOsFs()}, nil
 }

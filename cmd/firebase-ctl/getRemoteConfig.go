@@ -18,15 +18,15 @@ var getRemoteConfigCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		remoteConfigClient, err := firebase.GetRemoteConfigClient(ctx)
+		clientStore, err := firebase.GetClientStore(ctx)
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		latestRemoteConfig, err := remoteConfigClient.GetLatestRemoteConfig(ctx)
+		latestRemoteConfig, err := clientStore.GetLatestRemoteConfig(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
-		errs := firebase.BackupRemoteConfig(latestRemoteConfig, outputDir)
+		errs := clientStore.BackupRemoteConfig(latestRemoteConfig, outputDir)
 		if len(errs) > 0 {
 			for _, err := range errs {
 				fmt.Println(err)
