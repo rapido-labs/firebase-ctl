@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "firebasectl",
-	Short: "firebasectl can be used to get, apply, show diff of remote config resources",
+	Use:   "firebase-ctl",
+	Short: "firebase-ctl can be used to get, apply, show diff of remote config resources",
 }
 
 func Execute() {

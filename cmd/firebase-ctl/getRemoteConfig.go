@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"firebasectl/internal/firebase"
+	"github.com/roppenlabs/firebase-ctl/internal/firebase"
 
 	"github.com/spf13/cobra"
 )

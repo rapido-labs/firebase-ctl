@@ -2,11 +2,13 @@ package firebase
 
 import (
 	"context"
-	"firebasectl/internal/config"
-	"firebasectl/internal/utils"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/roppenlabs/firebase-ctl/internal/config"
+
+	"github.com/roppenlabs/firebase-ctl/internal/utils"
 
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
 )

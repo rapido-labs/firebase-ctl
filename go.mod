@@ -1,4 +1,4 @@
-module firebasectl
+module github.com/roppenlabs/firebase-ctl
 
 go 1.16
 
