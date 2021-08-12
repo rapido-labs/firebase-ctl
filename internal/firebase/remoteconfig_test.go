@@ -43,7 +43,7 @@ func (c *ClientTestSuite) TestGetRemoteConfigClientReturnsValidConfig() {
 		RemoteConfig: remoteconfig.RemoteConfig{},
 		Etag:         "",
 	}, nil).Times(1)
-	cfg, err:= rc.GetLatestRemoteConfig(context.Background())
+	cfg, err:= rc.GetLatestRemoteConfig()
 	assert.NoError(c.T(), err)
 	assert.NotNil(c.T(), cfg)
 	c.mock.AssertExpectations(c.T())
@@ -51,7 +51,7 @@ func (c *ClientTestSuite) TestGetRemoteConfigClientReturnsValidConfig() {
 func (c *ClientTestSuite) TestGetRemoteConfigClientErrorsOut() {
 	rc := ClientStore{RemoteConfigClient: c.mock}
 	c.mock.On("GetRemoteConfig",mock.Anything).Return((*remoteconfig.Response)(nil) , errors.New("test error")).Times(1)
-	cfg, err:= rc.GetLatestRemoteConfig(context.Background())
+	cfg, err:= rc.GetLatestRemoteConfig()
 	assert.Error(c.T(), err)
 	assert.Equal(c.T(), err.Error(), "test error")
 	assert.Nil(c.T(), cfg)

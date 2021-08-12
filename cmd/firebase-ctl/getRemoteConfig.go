@@ -22,7 +22,7 @@ var getRemoteConfigCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		latestRemoteConfig, err := clientStore.GetLatestRemoteConfig(ctx)
+		latestRemoteConfig, err := clientStore.GetLatestRemoteConfig()
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,7 +1,6 @@
 package firebase
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 
@@ -12,8 +11,7 @@ import (
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
 )
 
-
-func (cs ClientStore) GetLatestRemoteConfig(ctx context.Context) (*remoteconfig.Response, error) {
+func (cs ClientStore) GetLatestRemoteConfig() (*remoteconfig.Response, error) {
 	latestRemoteConfig, err := cs.RemoteConfigClient.GetRemoteConfig("")
 	if err != nil {
 		return nil, err
