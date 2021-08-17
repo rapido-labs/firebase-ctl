@@ -1,0 +1,39 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    dir: ./cmd/firebase-ctl/
+archives:
+  - replacements:
+      darwin: Darwin
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+brews:
+  -
+    name: firebase-ctl
+    tap:
+      owner: roppenlabs
+      name: homebrew-rapido
+    url_template: "https://github.com/roppenlabs/firebase-ctl/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    custom_require: "../custom_download_strategy"
+    commit_author:
+      name: goreleaserbot
+      email: devops@rapido.bike
+    folder: Formula
+    homepage: "https://github.com/roppenlabs/firebase-ctl"
+    description: "Firebase CTL"
+    skip_upload: false
