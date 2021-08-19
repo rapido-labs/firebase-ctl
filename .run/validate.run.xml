@@ -1,15 +1,15 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="get" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="validate" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="firebase-ctl" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-i" />
-    <parameters value="get remote-config --output-dir internal/firebase/test" />
+    <parameters value="validate remote-config --input-dir internal/firebase/test" />
     <envs>
       <env name="GOOGLE_APPLICATION_CREDENTIALS" value="firebase.json" />
     </envs>
-    <kind value="PACKAGE" />
+    <kind value="DIRECTORY" />
     <package value="github.com/roppenlabs/firebase-ctl/cmd/firebase-ctl" />
-    <directory value="$PROJECT_DIR$" />
+    <directory value="$PROJECT_DIR$/cmd/firebase-ctl" />
     <filePath value="$PROJECT_DIR$" />
     <method v="2" />
   </configuration>
