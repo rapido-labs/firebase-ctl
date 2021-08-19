@@ -13,9 +13,6 @@ import (
 func ValidateParameters(parameters map[string]remoteconfig.Parameter)[]error{
 	errs := []error{}
 	for k, v := range parameters{
-		if v.Description ==""{
-			errs = append(errs, fmt.Errorf("missing description for key: %s", k))
-		}
 		switch strings.ToLower(v.ValueType){
 		case "string": continue
 		case "json":
