@@ -18,7 +18,11 @@ var validateConfig = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		err = clientStore.ApplyConfig(cmd.Flag("input-dir").Value.String(), true)
+		localConfig, err := clientStore.GetLocalConfig(cmd.Flag("input-dir").Value.String())
+		if err!= nil{
+			log.Fatal("error reading config from local", err)
+		}
+		err = clientStore.ApplyConfig(*localConfig, true)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

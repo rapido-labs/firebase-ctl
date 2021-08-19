@@ -18,7 +18,12 @@ var applyConfig = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		err = clientStore.ApplyConfig(cmd.Flag("input-dir").Value.String(), false)
+		cfg, err:= clientStore.GetLocalConfig(cmd.Flag("input-dir").Value.String())
+		if err!= nil{
+			log.Fatal("error getting latest config",err)
+			return
+		}
+		err = clientStore.ApplyConfig(*cfg, false)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

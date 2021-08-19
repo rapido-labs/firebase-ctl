@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-type ClientTestSuite struct {
+type DiffTestSuite struct {
 	suite.Suite
 }
 
-func (c *ClientTestSuite)SetupTest(){}
+func (c *DiffTestSuite)SetupTest() {}
 
-func (c *ClientTestSuite)TestConditionsDiff()  {
+func (c *DiffTestSuite)TestConditionsDiff()  {
 	//nil and nil
 	diff := GetRemoteDiffForConditions(nil, nil)
 	assert.Equal(c.T(), "", diff)
@@ -52,6 +52,6 @@ func (c *ClientTestSuite)TestConditionsDiff()  {
 
 
 func Test_Suite(t *testing.T) {
-	suite.Run(t, new(ClientTestSuite))
+	suite.Run(t, new(DiffTestSuite))
 }
 

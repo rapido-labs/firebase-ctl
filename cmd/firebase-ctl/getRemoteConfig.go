@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/roppenlabs/firebase-ctl/internal/firebase"
@@ -26,12 +25,9 @@ var getRemoteConfigCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		errs := clientStore.BackupRemoteConfig(latestRemoteConfig, outputDir)
-		if len(errs) > 0 {
-			for _, err := range errs {
-				fmt.Println(err)
-			}
-			log.Fatal()
+		err = clientStore.BackupRemoteConfig(latestRemoteConfig, outputDir)
+		if err!= nil{
+			log.Fatal(err)
 		}
 	},
 }

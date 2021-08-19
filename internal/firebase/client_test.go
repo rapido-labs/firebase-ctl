@@ -96,9 +96,9 @@ func (c *ClientTestSuite)TestBackupToFsSuccess()  {
 		Etag:         "",
 	}
 	outputDir := "sample/outputdir"
-	errs:= cs.BackupRemoteConfig(dummyResponse.RemoteConfig,outputDir)
-	assert.Lenf(c.T(), errs, 0, "error length does not match. expected 0")
-	file, err := tempFs.OpenFile(filepath.Join(outputDir, "conditions", "there.json"),os.O_RDONLY, 0644)
+	err:= cs.BackupRemoteConfig(dummyResponse.RemoteConfig,outputDir)
+	assert.NoError(c.T(), err)
+	file, err := tempFs.OpenFile(filepath.Join(outputDir, "conditions", "conditions.json"),os.O_RDONLY| os.O_CREATE, 0644)
 	if err!= nil{
 		c.T().Fail()
 	}
@@ -139,8 +139,8 @@ func (c *ClientTestSuite)TestBackupToFsFailureBecauseFSErrors()  {
 
 	cs.fsClient =tempFs
 
-	errs := cs.BackupRemoteConfig(dummyResponse.RemoteConfig, outputDir)
-	assert.Len(c.T(), errs, 2)
+	err := cs.BackupRemoteConfig(dummyResponse.RemoteConfig, outputDir)
+	assert.Contains(c.T(), err.Error(),"operation not permitted")
 }
 
 func (c * ClientTestSuite)TestApplyConfig(){
@@ -148,18 +148,23 @@ func (c * ClientTestSuite)TestApplyConfig(){
 	cs := ClientStore{fsClient: tempFs, remoteConfigClient:c.mock}
 	//successful publish
 	c.mock.On("PublishTemplate", context.Background(),mock.Anything, false).Return(&remoteconfig.Template{}, nil).Times(1)
-	err := cs.ApplyConfig("./test", false)
+	err := cs.ApplyConfig(remoteconfig.RemoteConfig{
+		Conditions:      nil,
+		Parameters:      nil,
+		Version:         remoteconfig.Version{},
+		ParameterGroups: nil,
+	}, false)
 	assert.NoError(c.T(), err)
 	c.mock.AssertExpectations(c.T())
 
-	// invalid directory given
-	err = cs.ApplyConfig("./test1", false)
-
-	assert.Equal(c.T(), "open test1/conditions: no such file or directory", err.Error())
-	c.mock.AssertExpectations(c.T())
 
 	c.mock.On("PublishTemplate", context.Background(),mock.Anything, false).Return((*remoteconfig.Template)(nil), errors.New("test error")).Times(1)
-	err = cs.ApplyConfig("./test", false)
+	err = cs.ApplyConfig(remoteconfig.RemoteConfig{
+		Conditions:      nil,
+		Parameters:      nil,
+		Version:         remoteconfig.Version{},
+		ParameterGroups: nil,
+	}, false)
 	assert.Contains(c.T(), err.Error(),"test error")
 	c.mock.AssertExpectations(c.T())
 
@@ -230,8 +235,8 @@ func (c *ClientTestSuite)TestBackup(){
 		remoteConfigClient: c.mock,
 		fsClient:           afero.NewMemMapFs(),
 	}
-	errs := cs.BackupRemoteConfig(&configToWrite,"test")
-	assert.Len(c.T(), errs, 0)
+	err := cs.BackupRemoteConfig(&configToWrite,"test")
+	assert.NoError(c.T(), err)
 
 	localConfig, err := cs.GetLocalConfig("test")
 	assert.NoError(c.T(), err)

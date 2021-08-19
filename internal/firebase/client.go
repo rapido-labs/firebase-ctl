@@ -3,7 +3,6 @@ package firebase
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	firebase "github.com/rapido-labs/firebase-admin-go/v4"
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
@@ -25,64 +24,66 @@ type ClientStore struct {
 }
 
 func (cs *ClientStore) GetLatestRemoteConfig() (*remoteconfig.RemoteConfig, error) {
-	latestRemoteConfig, err := cs.remoteConfigClient.GetRemoteConfig("")
+	latestRemoteConfigResponse, err := cs.remoteConfigClient.GetRemoteConfig("")
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-	return latestRemoteConfig.RemoteConfig, err
-}
-func (cs *ClientStore) BackupRemoteConfig(remoteConfig *remoteconfig.RemoteConfig, outputDir string) []error {
-	errs := []error{}
-	conditions := remoteConfig.Conditions
-	conditionsDirPath := filepath.Join(outputDir, config.ConditionsDir)
-	cs.fsClient.MkdirAll(conditionsDirPath, 0744)
+	rc := latestRemoteConfigResponse.RemoteConfig
+	for i := range rc.Parameters {
+		valueType := "string"
+		if strings.HasPrefix(rc.Parameters[i].DefaultValue.ExplicitValue, "{") || strings.HasPrefix(rc.Parameters[i].DefaultValue.ExplicitValue, "[") {
+			valueType = "json"
+		}
+		parameter := rc.Parameters[i]
+		parameter.ValueType = valueType
+		rc.Parameters[i] = parameter
+	}
 
-	for _, condition := range conditions {
-		data, err := utils.JSONMarshal(condition)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		fileName := filepath.Join(conditionsDirPath, condition.Name+".json")
-		file, err := cs.fsClient.OpenFile(fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		_, err = file.Write(data)
-		if err != nil {
-			errs = append(errs, err)
-		}
+	return rc, err
+}
+func (cs *ClientStore) BackupRemoteConfig(remoteConfig *remoteconfig.RemoteConfig, outputDir string) error {
+	conditions := remoteConfig.Conditions
+	conditionsDir := filepath.Join(outputDir, config.ConditionsDir)
+	conditionsFilePath := filepath.Join(conditionsDir, config.ConditionsFile)
+	cs.fsClient.MkdirAll(conditionsDir, 0744)
+	conditionsData, err := utils.JSONMarshal(conditions)
+	if err != nil {
+		return fmt.Errorf("error marshalling conditions to json: %s", err.Error())
+	}
+	conditionsFile, err := cs.fsClient.OpenFile(conditionsFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening conditions file for write: %v", err.Error())
+	}
+	_, err = conditionsFile.Write(conditionsData)
+	if err != nil {
+		return fmt.Errorf("error writing file to conditions file: %s", err.Error())
 	}
 
 	parameters := remoteConfig.Parameters
-	parametersDirPath := filepath.Join(outputDir, config.ParametersDir)
-	cs.fsClient.MkdirAll(parametersDirPath, 0744)
+	parameterDir := filepath.Join(outputDir, config.ParametersDir)
+	parameterFilePath := filepath.Join(parameterDir, config.ParametersFile)
+	cs.fsClient.MkdirAll(parameterDir, 0744)
 
-	for key, parameter := range parameters {
-		data, err := utils.JSONMarshal(parameter)
-		if err != nil {
-			errs = append(errs, err)
-		}
-
-		fileName := filepath.Join(parametersDirPath, key+".json")
-		file, err := cs.fsClient.OpenFile(fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		_, err = file.Write(data)
-		if err != nil {
-			errs = append(errs, err)
-		}
+	parameterData, err := utils.JSONMarshal(parameters)
+	if err != nil {
+		return fmt.Errorf("error marshalling parameters: %s", err.Error())
 	}
-	return errs
+
+	parametersFile, err := cs.fsClient.OpenFile(parameterFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening parameter file for write: %s", err.Error())
+	}
+	_, err = parametersFile.Write(parameterData)
+	if err != nil {
+		return fmt.Errorf("error writing to parameter file: %s", err.Error())
+	}
+	return nil
 }
 func (cs *ClientStore) GetLocalConfig(dir string) (*remoteconfig.RemoteConfig, error) {
 	remoteConfig := &remoteconfig.RemoteConfig{}
-	conditionsDirPath := filepath.Join(dir, config.ConditionsDir)
-	conditionsFromConfig, err := cs.readConditionsFromConfig(conditionsDirPath)
+	conditionsFilePath := filepath.Join(dir, config.ConditionsDir)
+	conditionsFromConfig, err := cs.readConditionsFromConfig(conditionsFilePath)
 	if err != nil && err != io.EOF {
 		return remoteConfig, err
 	}
@@ -95,15 +96,19 @@ func (cs *ClientStore) GetLocalConfig(dir string) (*remoteconfig.RemoteConfig, e
 	remoteConfig.Parameters = parametersFromConfig
 	return remoteConfig, nil
 }
-func (cs *ClientStore) ApplyConfig(dir string, validateOnly bool) error {
-	cfg, errs := cs.GetLocalConfig(dir)
-	if errs != nil {
-		return errs
+func (cs *ClientStore) ApplyConfig(rc remoteconfig.RemoteConfig, validateOnly bool) error {
+	errs := utils.ValidateParameters(rc.Parameters)
+	if len(errs) != 0 {
+		errStringBuilder := strings.Builder{}
+		for j := range errs {
+			errStringBuilder.WriteString("\n\t" + errs[j].Error())
+		}
+		return fmt.Errorf("error validating parameter values. %s", errStringBuilder.String())
 	}
 	template := remoteconfig.Template{
-		Conditions:      cfg.Conditions,
-		Parameters:      cfg.Parameters,
-		ParameterGroups: cfg.ParameterGroups,
+		Conditions:      rc.Conditions,
+		Parameters:      rc.Parameters,
+		ParameterGroups: rc.ParameterGroups,
 		Version: remoteconfig.Version{
 			Description:    "",
 			IsLegacy:       false,
@@ -117,7 +122,7 @@ func (cs *ClientStore) ApplyConfig(dir string, validateOnly bool) error {
 	}
 	_, err := cs.remoteConfigClient.PublishTemplate(context.Background(), template, validateOnly)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error publishing template: %s ", err.Error()))
+		return fmt.Errorf("error publishing template: %s ", err.Error())
 	}
 	return nil
 
@@ -136,32 +141,18 @@ func (cs *ClientStore) GetRemoteConfigDiff(inputDir string) error {
 }
 func (cs *ClientStore) readConditionsFromConfig(dirPath string) ([]remoteconfig.Condition, error) {
 	var conditions []remoteconfig.Condition
-	s, err := cs.fsClient.Open(dirPath)
+	conditionFilePath := filepath.Join(dirPath, config.ConditionsFile)
+	file, err := cs.fsClient.OpenFile(conditionFilePath, os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
-	files, err := s.Readdir(512)
+	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
-	for _, file := range files {
-		if !file.IsDir() {
-			conditionFilePath := filepath.Join(dirPath, file.Name())
-			condition := remoteconfig.Condition{}
-			file, err := cs.fsClient.OpenFile(conditionFilePath, os.O_RDONLY, 0644)
-			if err != nil {
-				return nil, err
-			}
-			bytes, err := ioutil.ReadAll(file)
-			if err != nil {
-				return nil, err
-			}
-			err = json.Unmarshal(bytes, &condition)
-			if err != nil {
-				return nil, err
-			}
-			conditions = append(conditions, condition)
-		}
+	err = json.Unmarshal(bytes, &conditions)
+	if err != nil {
+		return nil, err
 	}
 	return conditions, nil
 }
@@ -176,27 +167,24 @@ func (cs *ClientStore) readParametersFromConfig(dirPath string) (map[string]remo
 		return nil, err
 	}
 
-	for _, file := range files {
-		if !file.IsDir() {
-			parameterFilePath := filepath.Join(dirPath, file.Name())
-			parameter := remoteconfig.Parameter{}
-			file, err := cs.fsClient.OpenFile(parameterFilePath, os.O_RDONLY, 0644)
-			if err != nil {
-				return nil, err
-			}
-			bytes, err := ioutil.ReadAll(file)
-			if err != nil {
-				return nil, err
-			}
-
-			err = json.Unmarshal(bytes, &parameter)
-			if err != nil {
-				return nil, err
-			}
-			fileBase := filepath.Base(file.Name())
-			key := strings.TrimRight(fileBase, ".json")
-			parameters[strings.Split(key, ".json")[0]] = parameter
+	for _, fileInfo := range files {
+		if fileInfo.IsDir() {
+			continue
 		}
+		parameterFilePath := filepath.Join(dirPath, fileInfo.Name())
+		file, err := cs.fsClient.OpenFile(parameterFilePath, os.O_RDONLY, 0644)
+		if err != nil {
+			return nil, err
+		}
+		bytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(bytes, &parameters)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return parameters, nil
