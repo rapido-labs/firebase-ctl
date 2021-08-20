@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/roppenlabs/firebase-ctl/internal/utils"
 	"log"
 
 	"github.com/roppenlabs/firebase-ctl/internal/firebase"
@@ -19,16 +20,17 @@ var getRemoteConfigCmd = &cobra.Command{
 
 		clientStore, err := firebase.GetClientStore(ctx)
 		if err != nil {
-			log.Fatalf("Error while getting firebase app: %s", err.Error())
+			log.Fatalf("%serror while getting firebase app: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		latestRemoteConfig, err := clientStore.GetLatestRemoteConfig()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("%serror getting latest remote config: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		err = clientStore.BackupRemoteConfig(latestRemoteConfig, outputDir)
 		if err!= nil{
-			log.Fatal(err)
+			log.Fatalf("%serror backing up remote config: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
+		log.Printf("%ssuccessfully backed up the config to %s%s", utils.Green, outputDir, utils.Reset)
 	},
 }
 

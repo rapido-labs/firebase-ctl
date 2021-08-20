@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/roppenlabs/firebase-ctl/internal/firebase"
+	"github.com/roppenlabs/firebase-ctl/internal/utils"
 	"github.com/spf13/cobra"
 	"log"
 )
@@ -17,10 +18,12 @@ var diffRemoteConfigCmd = &cobra.Command{
 
 		clientStore, err := firebase.GetClientStore(ctx)
 		if err != nil {
-			log.Fatalf("Error while getting firebase app: %s", err.Error())
+			log.Fatalf("%serror while getting firebase app: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
-		clientStore.GetRemoteConfigDiff(cmd.Flag("config-dir").Value.String())
-
+		err = clientStore.GetRemoteConfigDiff(cmd.Flag("config-dir").Value.String())
+		if err != nil {
+			log.Fatalf("%serror computing diff: %s%s", utils.Red, err.Error(), utils.Reset)
+		}
 	},
 }
 

@@ -20,14 +20,14 @@ type ClientMock struct {
 
 func (c *ClientMock) GetRemoteConfig(versionNumber string) (*remoteconfig.Response, error) {
 	args := c.Called(versionNumber)
-	if args.Get(0)==nil{
+	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*remoteconfig.Response), args.Error(1)
 }
-func (c * ClientMock)PublishTemplate(ctx context.Context, template remoteconfig.Template, validateOnly bool)(*remoteconfig.Template,error){
+func (c *ClientMock) PublishTemplate(ctx context.Context, template remoteconfig.Template, validateOnly bool) (*remoteconfig.Template, error) {
 	args := c.Called(ctx, template, validateOnly)
-	if args.Get(0)==nil{
+	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*remoteconfig.Template), args.Error(1)
@@ -43,68 +43,65 @@ type ClientTestSuite struct {
 	mock *ClientMock
 }
 
-func (c *ClientTestSuite)SetupTest(){
-	c.mock =new(ClientMock)
+func (c *ClientTestSuite) SetupTest() {
+	c.mock = new(ClientMock)
 }
 
 func (c *ClientTestSuite) TestGetRemoteConfigClientReturnsValidConfig() {
 	rc := ClientStore{remoteConfigClient: c.mock}
-	c.mock.On("GetRemoteConfig",mock.Anything).Return(&remoteconfig.Response{
+	c.mock.On("GetRemoteConfig", mock.Anything).Return(&remoteconfig.Response{
 		RemoteConfig: &remoteconfig.RemoteConfig{
 			Conditions:      nil,
 			Parameters:      nil,
 			Version:         remoteconfig.Version{},
 			ParameterGroups: nil,
 		},
-		Etag:         "",
+		Etag: "",
 	}, nil).Times(1)
-	cfg, err:= rc.GetLatestRemoteConfig()
+	cfg, err := rc.GetLatestRemoteConfig()
 	assert.NoError(c.T(), err)
 	assert.NotNil(c.T(), cfg)
 	c.mock.AssertExpectations(c.T())
 }
 func (c *ClientTestSuite) TestGetRemoteConfigClientErrorsOut() {
 	rc := ClientStore{remoteConfigClient: c.mock}
-	c.mock.On("GetRemoteConfig",mock.Anything).Return((*remoteconfig.Response)(nil) , errors.New("test error")).Times(1)
-	cfg, err:= rc.GetLatestRemoteConfig()
+	c.mock.On("GetRemoteConfig", mock.Anything).Return((*remoteconfig.Response)(nil), errors.New("test error")).Times(1)
+	cfg, err := rc.GetLatestRemoteConfig()
 	assert.Error(c.T(), err)
 	assert.Equal(c.T(), err.Error(), "test error")
 	assert.Nil(c.T(), cfg)
 	c.mock.AssertExpectations(c.T())
 
-
 }
 
-func (c *ClientTestSuite)TestBackupToFsSuccess()  {
+func (c *ClientTestSuite) TestBackupToFsSuccess() {
 	tempFs := afero.NewMemMapFs()
-	cs := ClientStore{remoteConfigClient: c.mock, fsClient: tempFs}
+	cs := ClientStore{remoteConfigClient: c.mock, customFs: &customFs{tempFs}}
 	dummyResponse := &remoteconfig.Response{
 		RemoteConfig: &remoteconfig.RemoteConfig{
-			Conditions:      []remoteconfig.Condition{remoteconfig.Condition{
+			Conditions: []remoteconfig.Condition{remoteconfig.Condition{
 				Expression: "hello",
 				Name:       "there",
 				TagColor:   remoteconfig.Blue,
 			}},
-			Parameters:      map[string]remoteconfig.Parameter{"hello": {
-				ConditionalValues: nil,
-				DefaultValue:      nil,
-				Description:       "",
-						}},
+			Parameters: map[string]remoteconfig.Parameter{"hello": {
+				Description: "",
+			}},
 			Version:         remoteconfig.Version{},
 			ParameterGroups: nil,
 		},
-		Etag:         "",
+		Etag: "",
 	}
 	outputDir := "sample/outputdir"
-	err:= cs.BackupRemoteConfig(dummyResponse.RemoteConfig,outputDir)
+	err := cs.BackupRemoteConfig(dummyResponse.RemoteConfig, outputDir)
 	assert.NoError(c.T(), err)
-	file, err := tempFs.OpenFile(filepath.Join(outputDir, "conditions", "conditions.json"),os.O_RDONLY| os.O_CREATE, 0644)
-	if err!= nil{
+	file, err := tempFs.OpenFile(filepath.Join(outputDir, "conditions", "conditions.json"), os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
 		c.T().Fail()
 	}
 
 	contents, err := ioutil.ReadAll(file)
-	if err!=nil{
+	if err != nil {
 		c.T().Fail()
 	}
 	assert.Contains(c.T(), string(contents), "there")
@@ -112,69 +109,63 @@ func (c *ClientTestSuite)TestBackupToFsSuccess()  {
 	assert.Contains(c.T(), string(contents), remoteconfig.Blue)
 }
 
-
-func (c *ClientTestSuite)TestBackupToFsFailureBecauseFSErrors()  {
+func (c *ClientTestSuite) TestBackupToFsFailureBecauseFSErrors() {
 	memFs := afero.NewMemMapFs()
 	tempFs := afero.NewReadOnlyFs(memFs)
-	cs := ClientStore{remoteConfigClient: c.mock, fsClient: tempFs}
+	cs := ClientStore{remoteConfigClient: c.mock, customFs: &customFs{fs: tempFs}}
 	dummyResponse := &remoteconfig.Response{
 		RemoteConfig: &remoteconfig.RemoteConfig{
-			Conditions:      []remoteconfig.Condition{remoteconfig.Condition{
+			Conditions: []remoteconfig.Condition{remoteconfig.Condition{
 				Expression: "hello",
 				Name:       "there",
 				TagColor:   remoteconfig.Blue,
 			}},
-			Parameters:      map[string]remoteconfig.Parameter{"hello": {
-				ConditionalValues: nil,
-				DefaultValue:      nil,
-				Description:       "",
+			Parameters: map[string]remoteconfig.Parameter{"hello": {
+				Description: "",
 			}},
 			Version:         remoteconfig.Version{},
 			ParameterGroups: nil,
 		},
-		Etag:         "",
+		Etag: "",
 	}
 	outputDir := "sample/outputdir"
 
-
-	cs.fsClient =tempFs
+	cs.customFs.fs = tempFs
 
 	err := cs.BackupRemoteConfig(dummyResponse.RemoteConfig, outputDir)
-	assert.Contains(c.T(), err.Error(),"operation not permitted")
+	assert.Contains(c.T(), err.Error(), "operation not permitted")
 }
 
-func (c * ClientTestSuite)TestApplyConfig(){
+func (c *ClientTestSuite) TestApplyConfig() {
 	tempFs := afero.NewOsFs()
-	cs := ClientStore{fsClient: tempFs, remoteConfigClient:c.mock}
+	cs := ClientStore{customFs: &customFs{fs: tempFs}, remoteConfigClient: c.mock}
 	//successful publish
-	c.mock.On("PublishTemplate", context.Background(),mock.Anything, false).Return(&remoteconfig.Template{}, nil).Times(1)
+	c.mock.On("PublishTemplate", context.Background(), mock.Anything, false).Return(&remoteconfig.Template{}, nil).Times(1)
 	err := cs.ApplyConfig(remoteconfig.RemoteConfig{
 		Conditions:      nil,
 		Parameters:      nil,
 		Version:         remoteconfig.Version{},
 		ParameterGroups: nil,
-	}, false)
+	})
 	assert.NoError(c.T(), err)
 	c.mock.AssertExpectations(c.T())
 
-
-	c.mock.On("PublishTemplate", context.Background(),mock.Anything, false).Return((*remoteconfig.Template)(nil), errors.New("test error")).Times(1)
+	c.mock.On("PublishTemplate", context.Background(), mock.Anything, false).Return((*remoteconfig.Template)(nil), errors.New("test error")).Times(1)
 	err = cs.ApplyConfig(remoteconfig.RemoteConfig{
 		Conditions:      nil,
 		Parameters:      nil,
 		Version:         remoteconfig.Version{},
 		ParameterGroups: nil,
-	}, false)
-	assert.Contains(c.T(), err.Error(),"test error")
+	})
+	assert.Contains(c.T(), err.Error(), "test error")
 	c.mock.AssertExpectations(c.T())
-
 
 }
 
-func (c *ClientTestSuite)TestGetDiff(){
+func (c *ClientTestSuite) TestGetDiff() {
 	tempFs := afero.NewOsFs()
-	cs := ClientStore{fsClient: tempFs, remoteConfigClient:c.mock}
-	c.mock.On("GetRemoteConfig", "").Return(&remoteconfig.Response{RemoteConfig:&remoteconfig.RemoteConfig{
+	cs := ClientStore{customFs: &customFs{fs: tempFs}, remoteConfigClient: c.mock}
+	c.mock.On("GetRemoteConfig", "").Return(&remoteconfig.Response{RemoteConfig: &remoteconfig.RemoteConfig{
 		Conditions:      []remoteconfig.Condition{},
 		Parameters:      make(map[string]remoteconfig.Parameter),
 		Version:         remoteconfig.Version{},
@@ -202,8 +193,8 @@ func (c *ClientTestSuite)TestGetDiff(){
 	c.mock.AssertExpectations(c.T())
 
 }
-func (c *ClientTestSuite)TestGetLocalConfig(){
-	cs := &ClientStore{fsClient: afero.NewOsFs()}
+func (c *ClientTestSuite) TestGetLocalConfig() {
+	cs := &ClientStore{customFs: &customFs{fs: afero.NewOsFs()}}
 	rc, err := cs.GetLocalConfig("./test")
 	assert.Nil(c.T(), err, "error was not expected")
 	assert.Len(c.T(), rc.Conditions, 2, "unexpected conditions length")
@@ -211,42 +202,46 @@ func (c *ClientTestSuite)TestGetLocalConfig(){
 
 }
 
-func (c *ClientTestSuite)TestBackup(){
+func (c *ClientTestSuite) TestBackup() {
 	configToWrite := remoteconfig.RemoteConfig{
-		Conditions:      []remoteconfig.Condition{remoteconfig.Condition{
+		Conditions: []remoteconfig.Condition{remoteconfig.Condition{
 			Expression: "a==b",
 			Name:       "test_name",
 			TagColor:   remoteconfig.Blue,
 		}},
-		Parameters:      map[string]remoteconfig.Parameter{
-			"test":remoteconfig.Parameter{
+		Parameters: map[string]remoteconfig.Parameter{
+			"string": remoteconfig.Parameter{
 				ConditionalValues: map[string]*remoteconfig.ParameterValue{},
-				DefaultValue:      &remoteconfig.ParameterValue{
+				DefaultValue: &remoteconfig.ParameterValue{
 					ExplicitValue:   "test_value",
 					UseInAppDefault: true,
 				},
-				Description:       "test_description",
+				Description: "test_description",
 			},
+			"json": remoteconfig.Parameter{
+				ConditionalValues: map[string]*remoteconfig.ParameterValue{},
+				DefaultValue: &remoteconfig.ParameterValue{
+					ExplicitValue:   "{}",
+					UseInAppDefault: true,
+				},
+				Description: "test_description"},
 		},
 		Version:         remoteconfig.Version{},
 		ParameterGroups: nil,
 	}
 	cs := ClientStore{
 		remoteConfigClient: c.mock,
-		fsClient:           afero.NewMemMapFs(),
+		customFs:           &customFs{afero.NewMemMapFs()},
 	}
-	err := cs.BackupRemoteConfig(&configToWrite,"test")
+	err := cs.BackupRemoteConfig(&configToWrite, "test")
 	assert.NoError(c.T(), err)
 
 	localConfig, err := cs.GetLocalConfig("test")
 	assert.NoError(c.T(), err)
-	assert.Equal(c.T(),configToWrite, *localConfig)
+	assert.Equal(c.T(), configToWrite, *localConfig)
 
 }
-
 
 func Test_Suite(t *testing.T) {
 	suite.Run(t, new(ClientTestSuite))
 }
-
-

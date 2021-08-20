@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/roppenlabs/firebase-ctl/internal/firebase"
+	"github.com/roppenlabs/firebase-ctl/internal/utils"
 	"github.com/spf13/cobra"
 	"log"
 )
@@ -23,11 +23,12 @@ var applyConfig = &cobra.Command{
 			log.Fatal("error getting latest config",err)
 			return
 		}
-		err = clientStore.ApplyConfig(*cfg, false)
+		err = clientStore.ApplyConfig(*cfg)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Fatal("error applying latest config" ,err)
 			return
 		}
+		log.Printf("%s remote config applied successfully%s", utils.Green, utils.Reset)
 
 
 	},
