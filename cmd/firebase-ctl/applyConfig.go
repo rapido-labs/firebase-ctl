@@ -18,7 +18,7 @@ var applyConfig = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		cfg, err:= clientStore.GetLocalConfig(cmd.Flag("input-dir").Value.String())
+		cfg, err:= clientStore.GetLocalConfig(inputDir)
 		if err!= nil{
 			log.Fatal("error getting latest config",err)
 			return
@@ -35,7 +35,7 @@ var applyConfig = &cobra.Command{
 
 func init() {
 	applyCmd.AddCommand(applyConfig)
-	applyConfig.PersistentFlags().StringVar(&outputDir, "input-dir", "", "Path to output directory")
+	applyConfig.PersistentFlags().StringVar(&inputDir, "input-dir", "", "Path to output directory")
 	applyConfig.MarkPersistentFlagRequired("input-dir")
 }
 

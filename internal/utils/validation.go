@@ -18,7 +18,7 @@ func ValidateParameters(parameters map[string]remoteconfig.Parameter)[]error{
 		case "json":
 			err := validateJsonParameter(v)
 			if err!= nil{
-				errs = append(errs, fmt.Errorf("invalid json for key %s. error:%s",k, err.Error()))
+				errs = append(errs, fmt.Errorf(	"invalid json for key %s. error:%s",k, err.Error()))
 			}
 		default:
 			errs = append(errs, fmt.Errorf("invalid value type for key:%s", k))

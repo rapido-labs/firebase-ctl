@@ -8,6 +8,7 @@ import (
 	"log"
 )
 
+var inputDir string
 var validateConfig = &cobra.Command{
 	Use:   "remote-config",
 	Short: "validate remote-config by performing a dry-run",
@@ -18,7 +19,7 @@ var validateConfig = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while getting firebase app: %s", err.Error())
 		}
-		localConfig, err := clientStore.GetLocalConfig(cmd.Flag("input-dir").Value.String())
+		localConfig, err := clientStore.GetLocalConfig(inputDir)
 		if err!= nil{
 			log.Fatal("error reading config from local", err)
 		}
@@ -34,7 +35,7 @@ var validateConfig = &cobra.Command{
 
 func init() {
 	validateCmd.AddCommand(validateConfig)
-	validateConfig.PersistentFlags().StringVar(&outputDir, "input-dir", "", "Path to output directory")
+	validateConfig.PersistentFlags().StringVar(&inputDir, "input-dir", "", "Path to output directory")
 	validateConfig.MarkPersistentFlagRequired("input-dir")
 }
 
