@@ -9,7 +9,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-cmp v0.5.6
 	github.com/kr/pretty v0.3.0 // indirect
-	github.com/rapido-labs/firebase-admin-go/v4 v4.8.3
+	github.com/rapido-labs/firebase-admin-go/v4 v4.8.4
 	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/objx v0.3.0 // indirect

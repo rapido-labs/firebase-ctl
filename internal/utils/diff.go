@@ -13,7 +13,6 @@ func PrintDiff(source, remote remoteconfig.RemoteConfig) {
 	fmt.Println(GetRemoteDiffForConditions(source.Conditions, remote.Conditions))
 	sParams, rParams := map[string]remoteconfig.Parameter{}, map[string]remoteconfig.Parameter{}
 	for k, v := range source.Parameters {
-		v.ValueType=""
 		sParams[k] = v
 	}
 	for i := range remote.Parameters {
@@ -22,6 +21,8 @@ func PrintDiff(source, remote remoteconfig.RemoteConfig) {
 	fmt.Println("------------------------------------------------------------------------------------------------------------------------")
 	fmt.Println("Generating diff for parameters")
 	fmt.Println(GetRemoteDiffForParameters(sParams, rParams))
+	fmt.Println("------------------------------------------------------------------------------------------------------------------------")
+
 }
 
 const (
@@ -31,14 +32,7 @@ const (
 )
 
 func GetRemoteDiffForConditions(source, remote []remoteconfig.Condition) string {
-	sMap, rmap := map[string]remoteconfig.Condition{}, map[string]remoteconfig.Condition{}
-	for _, v := range source {
-		sMap[v.Name] = v
-	}
-	for _, v := range remote {
-		rmap[v.Name] = v
-	}
-	diff := cmp.Diff(rmap, sMap)
+	diff := cmp.Diff(remote, source)
 	greenDiff := strings.ReplaceAll(diff, "\n+", "\n"+Green)
 	redDiff := strings.ReplaceAll(greenDiff, "\n-", "\n"+Red)
 	finalDiff := strings.ReplaceAll(redDiff, "\n", Reset+"\n")

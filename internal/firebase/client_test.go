@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
+	"github.com/roppenlabs/firebase-ctl/internal/model"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 type ClientMock struct {
@@ -86,6 +88,10 @@ func (c *ClientTestSuite) TestBackupToFsSuccess() {
 			}},
 			Parameters: map[string]remoteconfig.Parameter{"hello": {
 				Description: "",
+				DefaultValue: &remoteconfig.ParameterValue{
+					ExplicitValue:   "world",
+					UseInAppDefault: false,
+				},
 			}},
 			Version:         remoteconfig.Version{},
 			ParameterGroups: nil,
@@ -121,7 +127,7 @@ func (c *ClientTestSuite) TestBackupToFsFailureBecauseFSErrors() {
 				TagColor:   remoteconfig.Blue,
 			}},
 			Parameters: map[string]remoteconfig.Parameter{"hello": {
-				Description: "",
+				Description: "", DefaultValue: &remoteconfig.ParameterValue{},
 			}},
 			Version:         remoteconfig.Version{},
 			ParameterGroups: nil,
@@ -141,20 +147,18 @@ func (c *ClientTestSuite) TestApplyConfig() {
 	cs := ClientStore{customFs: &customFs{fs: tempFs}, remoteConfigClient: c.mock}
 	//successful publish
 	c.mock.On("PublishTemplate", context.Background(), mock.Anything, false).Return(&remoteconfig.Template{}, nil).Times(1)
-	err := cs.ApplyConfig(remoteconfig.RemoteConfig{
+	err := cs.ApplyConfig(model.Config{
 		Conditions:      nil,
 		Parameters:      nil,
-		Version:         remoteconfig.Version{},
 		ParameterGroups: nil,
 	})
 	assert.NoError(c.T(), err)
 	c.mock.AssertExpectations(c.T())
 
 	c.mock.On("PublishTemplate", context.Background(), mock.Anything, false).Return((*remoteconfig.Template)(nil), errors.New("test error")).Times(1)
-	err = cs.ApplyConfig(remoteconfig.RemoteConfig{
+	err = cs.ApplyConfig(model.Config{
 		Conditions:      nil,
 		Parameters:      nil,
-		Version:         remoteconfig.Version{},
 		ParameterGroups: nil,
 	})
 	assert.Contains(c.T(), err.Error(), "test error")
@@ -211,7 +215,7 @@ func (c *ClientTestSuite) TestBackup() {
 		}},
 		Parameters: map[string]remoteconfig.Parameter{
 			"string": remoteconfig.Parameter{
-				ConditionalValues: map[string]*remoteconfig.ParameterValue{},
+				ConditionalValues: nil,
 				DefaultValue: &remoteconfig.ParameterValue{
 					ExplicitValue:   "test_value",
 					UseInAppDefault: true,
@@ -219,14 +223,23 @@ func (c *ClientTestSuite) TestBackup() {
 				Description: "test_description",
 			},
 			"json": remoteconfig.Parameter{
-				ConditionalValues: map[string]*remoteconfig.ParameterValue{},
+				ConditionalValues: nil,
 				DefaultValue: &remoteconfig.ParameterValue{
 					ExplicitValue:   "{}",
 					UseInAppDefault: true,
 				},
-				Description: "test_description"},
+				Description: "test_description",
+			},
 		},
-		Version:         remoteconfig.Version{},
+		Version: remoteconfig.Version{
+			Description:    "",
+			IsLegacy:       false,
+			RollbackSource: 0,
+			UpdateOrigin:   "REST_API",
+			UpdateTime:     time.Time{},
+			UpdateType:     "FORCED_UPDATE",
+			UpdateUser:     nil,
+			VersionNumber:  0},
 		ParameterGroups: nil,
 	}
 	cs := ClientStore{
@@ -238,7 +251,8 @@ func (c *ClientTestSuite) TestBackup() {
 
 	localConfig, err := cs.GetLocalConfig("test")
 	assert.NoError(c.T(), err)
-	assert.Equal(c.T(), configToWrite, *localConfig)
+	assert.Equal(c.T(), configToWrite.Conditions, model.ConvertToRemoteConfig(*localConfig).Conditions)
+	assert.Equal(c.T(), configToWrite.Parameters,model.ConvertToRemoteConfig(*localConfig).Parameters)
 
 }
 

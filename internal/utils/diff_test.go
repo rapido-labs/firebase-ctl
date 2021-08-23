@@ -38,13 +38,13 @@ func (c *DiffTestSuite)TestConditionsDiff()  {
 		TagColor:   "GREEN",
 	}}
 	remoteArray := []remoteconfig.Condition{{
-		Expression: "efgh",
-		Name:       "name2",
-		TagColor:   "GREEN",
-	},{
 		Expression: "abcd",
 		Name:       "name1",
 		TagColor:   "BLUE",
+	},{
+		Expression: "efgh",
+		Name:       "name2",
+		TagColor:   "GREEN",
 	}}
 	diff = GetRemoteDiffForConditions(sourceArray, remoteArray)
 	assert.Equal(c.T(), "", diff)

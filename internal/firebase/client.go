@@ -6,10 +6,10 @@ import (
 	firebase "github.com/rapido-labs/firebase-admin-go/v4"
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
 	"github.com/roppenlabs/firebase-ctl/internal/config"
+	"github.com/roppenlabs/firebase-ctl/internal/model"
 	"github.com/roppenlabs/firebase-ctl/internal/utils"
 	"github.com/spf13/afero"
 	"google.golang.org/api/option"
-	"io"
 	"log"
 	"path/filepath"
 	"strings"
@@ -37,39 +37,39 @@ func (cs *ClientStore) GetLatestRemoteConfig() (*remoteconfig.RemoteConfig, erro
 	return latestRemoteConfigResponse.RemoteConfig, err
 }
 func (cs *ClientStore) BackupRemoteConfig(rc *remoteconfig.RemoteConfig, outputDir string) error {
-	for i := range rc.Parameters {
+	sourceDump := model.ConvertToSourceConfig(*rc)
+	for i := range sourceDump.Parameters {
 		valueType := "string"
-		if rc.Parameters[i].DefaultValue != nil &&
-			(strings.HasPrefix(rc.Parameters[i].DefaultValue.ExplicitValue, "{") ||
-				strings.HasPrefix(rc.Parameters[i].DefaultValue.ExplicitValue, "[")) {
+		if sourceDump.Parameters[i].DefaultValue != nil &&
+			(strings.HasPrefix(sourceDump.Parameters[i].DefaultValue.ExplicitValue, "{") ||
+				strings.HasPrefix(sourceDump.Parameters[i].DefaultValue.ExplicitValue, "[")) {
 			valueType = "json"
 		}
-		parameter := rc.Parameters[i]
+		parameter := sourceDump.Parameters[i]
 		parameter.ValueType = valueType
-		rc.Parameters[i] = parameter
+		sourceDump.Parameters[i] = parameter
 	}
 	conditionsFilePath := filepath.Join(outputDir, config.ConditionsDir, config.ConditionsFile)
-	err := cs.customFs.WriteJsonToFile(rc.Conditions,conditionsFilePath)
+	err := cs.customFs.WriteJsonToFile(sourceDump.Conditions,conditionsFilePath)
 	if err != nil {
 		return fmt.Errorf("error writing to conditions file: %v", err.Error())
 	}
 	parameterFilePath := filepath.Join(outputDir, config.ParametersDir, config.ParametersFile)
-	err = cs.customFs.WriteJsonToFile(rc.Parameters, parameterFilePath)
+	err = cs.customFs.WriteJsonToFile(sourceDump.Parameters, parameterFilePath)
 	if err != nil {
 		return fmt.Errorf("error writing to parameter file: %s", err.Error())
 	}
 	return nil
 }
-func (cs *ClientStore) GetLocalConfig(dir string) (*remoteconfig.RemoteConfig, error) {
-	remoteConfig := &remoteconfig.RemoteConfig{
-		Conditions:      []remoteconfig.Condition{},
-		Parameters: map[string]remoteconfig.Parameter{},
-		Version:         remoteconfig.Version{},
+func (cs *ClientStore) GetLocalConfig(dir string) (*model.Config, error) {
+	remoteConfig := &model.Config{
+		Conditions:      []model.Condition{},
+		Parameters: map[string]model.Parameter{},
 		ParameterGroups: nil,
 	}
 	conditionsFilePath := filepath.Join(dir, config.ConditionsDir, config.ConditionsFile)
 	err := cs.customFs.ReadFileAndUnmarshalJson(conditionsFilePath, &(remoteConfig.Conditions))
-	if err != nil && err != io.EOF {
+	if err != nil {
 		return remoteConfig, err
 	}
 
@@ -103,11 +103,13 @@ func (cs *ClientStore) pushConfigToRemote(rc remoteconfig.RemoteConfig, validate
 	return nil
 
 }
-func (cs *ClientStore)ValidateOnRemote(rc remoteconfig.RemoteConfig)error{
-	return cs.pushConfigToRemote(rc, true)
+func (cs *ClientStore)ValidateOnRemote(sourceConfig model.Config)error{
+	rc := model.ConvertToRemoteConfig(sourceConfig)
+	return cs.pushConfigToRemote(*rc, true)
 }
-func (cs *ClientStore)ApplyConfig(rc remoteconfig.RemoteConfig)error{
-	return cs.pushConfigToRemote(rc, false)
+func (cs *ClientStore)ApplyConfig(sourceConfig model.Config)error{
+	rc := model.ConvertToRemoteConfig(sourceConfig)
+	return cs.pushConfigToRemote(*rc, false)
 }
 func (cs *ClientStore) GetRemoteConfigDiff(inputDir string) error {
 	sourceConfig, err := cs.GetLocalConfig(inputDir)
@@ -118,7 +120,9 @@ func (cs *ClientStore) GetRemoteConfigDiff(inputDir string) error {
 	if err != nil {
 		return err
 	}
-	utils.PrintDiff(*sourceConfig, *remoteConfig)
+
+	convertedSourceConfig := model.ConvertToRemoteConfig(*sourceConfig)
+	utils.PrintDiff(*convertedSourceConfig, *remoteConfig)
 	return nil
 }
 

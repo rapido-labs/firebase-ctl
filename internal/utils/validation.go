@@ -3,14 +3,14 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
+	"github.com/roppenlabs/firebase-ctl/internal/model"
 	"strings"
 )
 
 
 
 
-func ValidateParameters(parameters map[string]remoteconfig.Parameter)[]error{
+func ValidateParameters(parameters map[string]model.Parameter)[]error{
 	errs := []error{}
 	for k, v := range parameters{
 		switch strings.ToLower(v.ValueType){
@@ -27,7 +27,7 @@ func ValidateParameters(parameters map[string]remoteconfig.Parameter)[]error{
 	return errs
 }
 
-func validateJsonParameter(parameter remoteconfig.Parameter)error{
+func validateJsonParameter(parameter model.Parameter)error{
 	err := json.Unmarshal([]byte(parameter.DefaultValue.ExplicitValue), &map[string]interface{}{})
 	if err!= nil{
 		return fmt.Errorf("invalid json in default value. %s", err.Error())
