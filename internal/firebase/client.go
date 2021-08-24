@@ -68,13 +68,13 @@ func (cs *ClientStore) GetLocalConfig(dir string) (*model.Config, error) {
 		ParameterGroups: nil,
 	}
 	conditionsFilePath := filepath.Join(dir, config.ConditionsDir, config.ConditionsFile)
-	err := cs.customFs.ReadFileAndUnmarshalJson(conditionsFilePath, &(remoteConfig.Conditions))
+	err := cs.customFs.UnmarshalFromFile(conditionsFilePath, &(remoteConfig.Conditions))
 	if err != nil {
 		return remoteConfig, err
 	}
 
 	parametersDirPath := filepath.Join(dir, config.ParametersDir)
-	err = cs.customFs.ReadDirAndUnMarshalJson(parametersDirPath, &(remoteConfig.Parameters))
+	err = cs.customFs.UnMarshalFromDir(parametersDirPath, &(remoteConfig.Parameters))
 	return remoteConfig, err
 }
 func (cs *ClientStore) pushConfigToRemote(rc remoteconfig.RemoteConfig, validateOnly bool) error {
@@ -104,11 +104,11 @@ func (cs *ClientStore) pushConfigToRemote(rc remoteconfig.RemoteConfig, validate
 
 }
 func (cs *ClientStore)ValidateOnRemote(sourceConfig model.Config)error{
-	rc := model.ConvertToRemoteConfig(sourceConfig)
+	rc := sourceConfig.ToRemoteConfig()
 	return cs.pushConfigToRemote(*rc, true)
 }
 func (cs *ClientStore)ApplyConfig(sourceConfig model.Config)error{
-	rc := model.ConvertToRemoteConfig(sourceConfig)
+	rc := sourceConfig.ToRemoteConfig()
 	return cs.pushConfigToRemote(*rc, false)
 }
 func (cs *ClientStore) GetRemoteConfigDiff(inputDir string) error {
@@ -121,7 +121,7 @@ func (cs *ClientStore) GetRemoteConfigDiff(inputDir string) error {
 		return err
 	}
 
-	convertedSourceConfig := model.ConvertToRemoteConfig(*sourceConfig)
+	convertedSourceConfig := sourceConfig.ToRemoteConfig()
 	utils.PrintDiff(*convertedSourceConfig, *remoteConfig)
 	return nil
 }

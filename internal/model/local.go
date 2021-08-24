@@ -58,7 +58,7 @@ type ParameterGroup struct {
 	Parameters  map[string]*Parameter `json:"parameters"`
 }
 
-func ConvertToRemoteConfig(c Config) *remoteconfig.RemoteConfig {
+func (c Config) ToRemoteConfig() *remoteconfig.RemoteConfig {
 	rc := &remoteconfig.RemoteConfig{
 		Conditions: convertSourceConditionsToRemote(c.Conditions),
 		Parameters: convertSourceParamsToRemote(c.Parameters),

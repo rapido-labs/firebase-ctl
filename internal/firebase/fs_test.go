@@ -37,12 +37,12 @@ func (c *FsTestSuite)TestReadJsonFromFile(){
 
 	c.T().Run("Should unmarshal successfully", func(t *testing.T) {
 		sampleMap := make(map[string]interface{})
-		err := customFs.ReadFileAndUnmarshalJson(filepath.Join(correctJsonsDir,"1.json"),&sampleMap)
+		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonsDir,"1.json"),&sampleMap)
 		assert.NoError(t, err)
 	})
 	c.T().Run("Should exit because invalid file", func(t *testing.T) {
 		sampleMap := make(map[string]interface{})
-		err := customFs.ReadFileAndUnmarshalJson(filepath.Join(correctJsonsDir,"2.json"),&sampleMap)
+		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonsDir,"2.json"),&sampleMap)
 		assert.Contains(t, err.Error(), "does not exist")
 	})
 
@@ -68,19 +68,19 @@ func(c *FsTestSuite)TestReadDirAndUnMarshal(){
 	customFs := customFs{fs: c.fs}
 	c.T().Run("test should scan the directory with only jsons and return all values", func(t *testing.T) {
 
-		err := customFs.ReadDirAndUnMarshalJson(correctJsonsDir, &map[string]interface{}{})
+		err := customFs.UnMarshalFromDir(correctJsonsDir, &map[string]interface{}{})
 		assert.NoError(t, err)
 	})
 	c.T().Run("test should return error when there is invalid json", func(t *testing.T) {
-		err := customFs.ReadDirAndUnMarshalJson(wrongJsonDir, &map[string]interface{}{})
+		err := customFs.UnMarshalFromDir(wrongJsonDir, &map[string]interface{}{})
 		assert.Error(t, err)
 	})
 	c.T().Run("test should return error when a non-existent directory is used", func(t *testing.T) {
-		err := customFs.ReadDirAndUnMarshalJson("some-random-dir", &map[string]interface{}{})
+		err := customFs.UnMarshalFromDir("some-random-dir", &map[string]interface{}{})
 		assert.Contains(t, err.Error(),"does not exist")
 	})
 	c.T().Run("test should error out when a filepath is passed instead of a directory path", func(t *testing.T) {
-		err:= customFs.ReadDirAndUnMarshalJson(filepath.Join(correctJsonsDir, "1.json"), &map[string]interface{}{})
+		err:= customFs.UnMarshalFromDir(filepath.Join(correctJsonsDir, "1.json"), &map[string]interface{}{})
 		assert.Error(t, err)
 	})
 }

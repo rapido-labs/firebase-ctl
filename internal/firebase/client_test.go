@@ -251,8 +251,8 @@ func (c *ClientTestSuite) TestBackup() {
 
 	localConfig, err := cs.GetLocalConfig("test")
 	assert.NoError(c.T(), err)
-	assert.Equal(c.T(), configToWrite.Conditions, model.ConvertToRemoteConfig(*localConfig).Conditions)
-	assert.Equal(c.T(), configToWrite.Parameters,model.ConvertToRemoteConfig(*localConfig).Parameters)
+	assert.Equal(c.T(), configToWrite.Conditions, localConfig.ToRemoteConfig().Conditions)
+	assert.Equal(c.T(), configToWrite.Parameters,localConfig.ToRemoteConfig().Parameters)
 
 }
 

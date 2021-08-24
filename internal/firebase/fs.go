@@ -14,7 +14,7 @@ type customFs struct{
 
 }
 
-func (f *customFs)ReadDirAndUnMarshalJson(dirName string, data interface{}) error{
+func (f *customFs) UnMarshalFromDir(dirName string, data interface{}) error{
 	dir, err := f.fs.Open(dirName)
 	if err != nil{
 		return err
@@ -29,7 +29,7 @@ func (f *customFs)ReadDirAndUnMarshalJson(dirName string, data interface{}) erro
 		if fileInfo.IsDir(){
 			continue
 		}
-		err = f.ReadFileAndUnmarshalJson(filepath.Join(dirName,fileInfo.Name()), data)
+		err = f.UnmarshalFromFile(filepath.Join(dirName,fileInfo.Name()), data)
 		if err!= nil{
 			errs = append(errs, err)
 		}
@@ -44,7 +44,7 @@ func (f *customFs)ReadDirAndUnMarshalJson(dirName string, data interface{}) erro
 	return nil
 
 }
-func (f *customFs)ReadFileAndUnmarshalJson(fileName string, data interface{}) error{
+func (f *customFs) UnmarshalFromFile(fileName string, data interface{}) error{
 	file, err := f.fs.Open(fileName)
 	if err!= nil{
 		return err
