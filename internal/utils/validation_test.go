@@ -28,6 +28,15 @@ func (c *ValidationTestSuite) TestParameters() {
 		Description:  "TestDescription",
 		ValueType:    "json",
 	}
+	parameters["validArray"]=  model.Parameter{
+		ConditionalValues: map[string]model.ParameterValue{"abcde": {
+			ExplicitValue:   "[]",
+			UseInAppDefault: false,
+		}},
+		DefaultValue: &model.ParameterValue{ExplicitValue: "{}"},
+		Description:  "TestDescription",
+		ValueType:    "json",
+	}
 	parameters["validString"] = model.Parameter{
 		ConditionalValues: nil,
 		DefaultValue:      &model.ParameterValue{ExplicitValue: "adhfg"},
