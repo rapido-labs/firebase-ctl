@@ -1,0 +1,5 @@
+/firebase-ctl
+.vscode
+.idea
+**/firebase*.json
+**/google*.json
