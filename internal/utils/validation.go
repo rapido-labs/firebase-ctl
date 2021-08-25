@@ -28,12 +28,13 @@ func ValidateParameters(parameters map[string]model.Parameter)[]error{
 }
 
 func validateJsonParameter(parameter model.Parameter)error{
-	err := json.Unmarshal([]byte(parameter.DefaultValue.ExplicitValue), &map[string]interface{}{})
+	var a json.RawMessage
+	err := json.Unmarshal([]byte(parameter.DefaultValue.ExplicitValue), &a)
 	if err!= nil{
 		return fmt.Errorf("invalid json in default value. %s", err.Error())
 	}
 	for i,cv := range parameter.ConditionalValues{
-		err := json.Unmarshal([]byte(cv.ExplicitValue), &map[string]interface{}{})
+		err := json.Unmarshal([]byte(cv.ExplicitValue), &a)
 		if err!= nil{
 			return fmt.Errorf("invalid json in conditional values. key:%s. error: %s", i, err.Error())
 		}
