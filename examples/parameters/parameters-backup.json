@@ -1,0 +1,41 @@
+{
+	"param1": {
+		"conditionalValues": null,
+		"defaultValue": {
+			"value": "0"
+		},
+		"description": "test description",
+		"valueType": "string"
+	},
+	"param2_json": {
+		"conditionalValues": null,
+		"defaultValue": {
+			"value": "{\"key\":\"value\"}"
+		},
+		"description": "test json",
+		"valueType": "json"
+	},
+	"param_to_add_with_tool": {
+		"conditionalValues": null,
+		"defaultValue": {
+			"value": "120"
+		},
+		"description": "test description",
+		"valueType": "string"
+	},
+	"param_with_condition": {
+		"conditionalValues": {
+			"TestCondition2": {
+				"value": "30"
+			},
+			"TestCondition_1": {
+				"value": "36"
+			}
+		},
+		"defaultValue": {
+			"value": "10"
+		},
+		"description": "test values with condition",
+		"valueType": "string"
+	}
+}
