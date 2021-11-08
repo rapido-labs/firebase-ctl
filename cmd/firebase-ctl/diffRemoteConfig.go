@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-var configDir string
 
 var diffRemoteConfigCmd = &cobra.Command{
 	Use:   "remote-config",
@@ -20,7 +19,7 @@ var diffRemoteConfigCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%serror while getting firebase app: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
-		err = clientStore.GetRemoteConfigDiff(cmd.Flag("config-dir").Value.String())
+		err = clientStore.GetRemoteConfigDiff(cmd.Flag("input-dir").Value.String())
 		if err != nil {
 			log.Fatalf("%serror computing diff: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
@@ -29,6 +28,6 @@ var diffRemoteConfigCmd = &cobra.Command{
 
 func init() {
 	diffCmd.AddCommand(diffRemoteConfigCmd)
-	diffRemoteConfigCmd.PersistentFlags().StringVar(&configDir, "config-dir", "", "Path to config directory")
-	diffRemoteConfigCmd.MarkPersistentFlagRequired("config-dir")
+	diffRemoteConfigCmd.PersistentFlags().StringVar(&inputDir, "input-dir", "", "Path to config directory")
+	diffRemoteConfigCmd.MarkPersistentFlagRequired("input-dir")
 }
