@@ -1,0 +1,12 @@
+[
+	{
+		"expression": "app.build.>=(['229'])",
+		"name": "Amazon Pay",
+		"tagColor": "PINK"
+	},
+	{
+		"expression": "app.build.>=(['234'])",
+		"name": "AmazonPay_Wallet",
+		"tagColor": "BROWN"
+	}
+]

@@ -5,6 +5,7 @@ builds:
       - CGO_ENABLED=0
     goos:
       - darwin
+      - linux
     dir: ./cmd/firebase-ctl/
 archives:
   - replacements:

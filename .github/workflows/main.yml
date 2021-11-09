@@ -6,7 +6,7 @@ on:
  push:
    tags:
      - v*
-   branches: [ "master" ]
+   branches: [ "main" ]
 jobs:
   goreleaser:
     runs-on: ubuntu-latest

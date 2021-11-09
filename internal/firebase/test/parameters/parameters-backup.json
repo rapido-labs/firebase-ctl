@@ -1,0 +1,34 @@
+{
+	"SOS_Bengaluru": {
+		"conditionalValues": {},
+		"defaultValue": {
+			"value": "8095111075"
+		},
+		"description": "SOS number to be used at Bengaluru",
+		"valueType": "string"
+	},
+	"ab_test_cancel_bottom_sheet": {
+		"conditionalValues": {},
+		"defaultValue": {
+			"value": "{\"enabled\":true,\"excludedCities\":[],\"cityABVariants\":{\"defaultVariant\":[{\"name\":\"Animation with Progress Bar\",\"ratio\":1}]}}"
+		},
+		"description": "A/B test variants distribution config for cancel bottom sheet shown while looking for captains",
+		"valueType": "json"
+	},
+	"ab_test_pickup_loc": {
+		"conditionalValues": {},
+		"defaultValue": {
+			"value": "{\"animationSpeed\":3000,\"animationWait\":3000,\"enabled\":true,\"excludedCities\":[\"mumbai\"],\"cityABVariants\":{\"defaultVariant\":[{\"name\":\"coachMarks\",\"ratio\":1}],\"cityVariants\":{\"sbengaluru\":[{\"name\":\"animation\",\"ratio\":1},{\"name\":\"bottomSheet\",\"ratio\":1},{\"name\":\"coachMarks\",\"ratio\":1}]}}}"
+		},
+		"description": "A/B test to highlight pickup location to user",
+		"valueType": "json"
+	},
+	"addMoney": {
+		"conditionalValues": {},
+		"defaultValue": {
+			"value": "1,9999"
+		},
+		"description": "min, max amounts.",
+		"valueType": "string"
+	}
+}
