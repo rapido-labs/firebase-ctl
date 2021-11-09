@@ -18,7 +18,7 @@ The output will be of the following structure
  |__conditions
     |__conditions.json
  |__parameters
-    |__parameters-backup.json
+    |__parameters.json
 ```
 ### Validate a directory whether the structure is valid
 Here, the user has two options
