@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/roppenlabs/firebase-ctl/internal/model"
+	"github.com/rapido-labs/firebase-ctl/internal/model"
 	"strings"
 )
 

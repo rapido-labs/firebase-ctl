@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/roppenlabs/firebase-ctl/internal/model"
+	"github.com/rapido-labs/firebase-ctl/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
-	"github.com/roppenlabs/firebase-ctl/internal/model"
+	"github.com/rapido-labs/firebase-ctl/internal/model"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

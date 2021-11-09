@@ -1,4 +1,4 @@
-module github.com/roppenlabs/firebase-ctl
+module github.com/rapido-labs/firebase-ctl
 
 go 1.14
 

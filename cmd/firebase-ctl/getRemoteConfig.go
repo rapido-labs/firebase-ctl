@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/roppenlabs/firebase-ctl/internal/utils"
+	"github.com/rapido-labs/firebase-ctl/internal/utils"
 	"log"
 
-	"github.com/roppenlabs/firebase-ctl/internal/firebase"
+	"github.com/rapido-labs/firebase-ctl/internal/firebase"
 
 	"github.com/spf13/cobra"
 )

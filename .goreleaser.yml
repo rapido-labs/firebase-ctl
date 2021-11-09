@@ -21,19 +21,3 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-brews:
-  -
-    name: firebase-ctl
-    tap:
-      owner: roppenlabs
-      name: homebrew-rapido
-    url_template: "https://github.com/roppenlabs/firebase-ctl/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-    custom_require: "../custom_download_strategy"
-    commit_author:
-      name: goreleaserbot
-      email: devops@rapido.bike
-    folder: Formula
-    homepage: "https://github.com/roppenlabs/firebase-ctl"
-    description: "Firebase CTL"
-    skip_upload: false
