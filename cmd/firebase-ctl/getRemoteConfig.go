@@ -31,6 +31,7 @@ var getRemoteConfigCmd = &cobra.Command{
 			log.Fatalf("%serror backing up remote config: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		log.Printf("%ssuccessfully backed up the config to %s%s", utils.Green, outputDir, utils.Reset)
+
 	},
 }
 

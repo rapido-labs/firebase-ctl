@@ -2,6 +2,7 @@ package firebase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	firebase "github.com/rapido-labs/firebase-admin-go/v4"
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
@@ -10,7 +11,6 @@ import (
 	"github.com/rapido-labs/firebase-ctl/internal/utils"
 	"github.com/spf13/afero"
 	"google.golang.org/api/option"
-	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -149,12 +149,11 @@ func getFirebaseApp(ctx context.Context) (*firebase.App, error) {
 func GetClientStore(ctx context.Context) (*ClientStore, error) {
 	firebaseApp, err := getFirebaseApp(ctx)
 	if err != nil {
-		log.Println("error creating firebase remote config app:", err.Error())
-		return &ClientStore{remoteConfigClient: nil, customFs: &customFs{afero.NewOsFs()}}, nil
+		return nil , errors.New(fmt.Sprintf("error creating firebase remote config app: %v", err.Error()))
 	}
 	client, err := firebaseApp.RemoteConfig(ctx)
 	if err != nil {
-		log.Printf("error while getting remoteconfig client: %s", err.Error())
+		return nil, errors.New(fmt.Sprintf("error creating firebase remote config client: %v", err.Error()))
 	}
 	return &ClientStore{remoteConfigClient: client, customFs: &customFs{afero.NewOsFs()}}, nil
 }
