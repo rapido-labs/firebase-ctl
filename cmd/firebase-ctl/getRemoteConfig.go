@@ -27,7 +27,7 @@ var getRemoteConfigCmd = &cobra.Command{
 			log.Fatalf("%serror getting latest remote config: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		err = clientStore.BackupRemoteConfig(latestRemoteConfig, outputDir)
-		if err!= nil{
+		if err != nil {
 			log.Fatalf("%serror backing up remote config: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		log.Printf("%ssuccessfully backed up the config to %s%s", utils.Green, outputDir, utils.Reset)

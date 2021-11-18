@@ -21,14 +21,14 @@ func (c *ValidationTestSuite) TestParameters() {
 	parameters := make(map[string]model.Parameter)
 	parameters["validJson"] = model.Parameter{
 		ConditionalValues: map[string]model.ParameterValue{"abcde": {
-								ExplicitValue:   "{}",
-								UseInAppDefault: false,
-							}},
+			ExplicitValue:   "{}",
+			UseInAppDefault: false,
+		}},
 		DefaultValue: &model.ParameterValue{ExplicitValue: "{}"},
 		Description:  "TestDescription",
 		ValueType:    "json",
 	}
-	parameters["validArray"]=  model.Parameter{
+	parameters["validArray"] = model.Parameter{
 		ConditionalValues: map[string]model.ParameterValue{"abcde": {
 			ExplicitValue:   "[]",
 			UseInAppDefault: false,

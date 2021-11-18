@@ -111,7 +111,7 @@ func convertSourceParamsToRemote(p map[string]Parameter) map[string]remoteconfig
 				UseInAppDefault: conditionalValueValue.UseInAppDefault,
 			}
 		}
-		if len(cv) == 0{
+		if len(cv) == 0 {
 			cv = nil
 		}
 		rcParams[parameterKey] = remoteconfig.Parameter{
@@ -151,7 +151,7 @@ func convertRemoteParamsToSource(p map[string]remoteconfig.Parameter) map[string
 				UseInAppDefault: conditionalValueValue.UseInAppDefault,
 			}
 		}
-		if len(cv) == 0{
+		if len(cv) == 0 {
 			cv = nil
 		}
 		rcParams[oarameterKey] = Parameter{

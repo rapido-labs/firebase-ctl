@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-
 var diffRemoteConfigCmd = &cobra.Command{
 	Use:   "remote-config",
 	Short: "backup remote-config resources from Firebase project",
