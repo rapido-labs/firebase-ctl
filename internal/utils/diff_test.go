@@ -11,9 +11,9 @@ type DiffTestSuite struct {
 	suite.Suite
 }
 
-func (c *DiffTestSuite)SetupTest() {}
+func (c *DiffTestSuite) SetupTest() {}
 
-func (c *DiffTestSuite)TestConditionsDiff()  {
+func (c *DiffTestSuite) TestConditionsDiff() {
 	//nil and nil
 	diff := GetRemoteDiffForConditions(nil, nil)
 	assert.Equal(c.T(), "", diff)
@@ -32,7 +32,7 @@ func (c *DiffTestSuite)TestConditionsDiff()  {
 		Expression: "abcd",
 		Name:       "name1",
 		TagColor:   "BLUE",
-	},{
+	}, {
 		Expression: "efgh",
 		Name:       "name2",
 		TagColor:   "GREEN",
@@ -41,7 +41,7 @@ func (c *DiffTestSuite)TestConditionsDiff()  {
 		Expression: "abcd",
 		Name:       "name1",
 		TagColor:   "BLUE",
-	},{
+	}, {
 		Expression: "efgh",
 		Name:       "name2",
 		TagColor:   "GREEN",
@@ -50,8 +50,6 @@ func (c *DiffTestSuite)TestConditionsDiff()  {
 	assert.Equal(c.T(), "", diff)
 }
 
-
 func Test_Suite(t *testing.T) {
 	suite.Run(t, new(DiffTestSuite))
 }
-

@@ -23,8 +23,8 @@ var validateConfig = &cobra.Command{
 			log.Printf("%sremote will not be available%s", utils.Red, utils.Reset)
 		}
 		localConfig, err := clientStore.GetLocalConfig(inputDir)
-		if err!= nil{
-			log.Fatalf("%serror reading config from local: %s%s",utils.Red,  err.Error(), utils.Reset)
+		if err != nil {
+			log.Fatalf("%serror reading config from local: %s%s", utils.Red, err.Error(), utils.Reset)
 		}
 		errs := utils.ValidateParameters(localConfig.Parameters)
 		if len(errs) != 0 {
@@ -32,11 +32,11 @@ var validateConfig = &cobra.Command{
 			for j := range errs {
 				errStringBuilder.WriteString("\n\t" + errs[j].Error())
 			}
-			log.Fatalf("%serror validating parameter values: %s%s", utils.Red,  errStringBuilder.String(), utils.Reset)
+			log.Fatalf("%serror validating parameter values: %s%s", utils.Red, errStringBuilder.String(), utils.Reset)
 			return
 		}
 		log.Printf("%sConfigValidation: Local validation successful %s", utils.Green, utils.Reset)
-		if _, err := config.GetFirebaseConfig();err !=nil{
+		if _, err := config.GetFirebaseConfig(); err != nil {
 			log.Printf("cannot initiate remoteConfigClient: %s", err.Error())
 		}
 		err = clientStore.ValidateOnRemote(*localConfig)
@@ -44,8 +44,7 @@ var validateConfig = &cobra.Command{
 			log.Fatal("error validating with remote api", err)
 			return
 		}
-		log.Printf("%sRemote validation successful %s", utils.Green, utils.Reset )
-
+		log.Printf("%sRemote validation successful %s", utils.Green, utils.Reset)
 
 	},
 }
@@ -55,4 +54,3 @@ func init() {
 	validateConfig.PersistentFlags().StringVar(&inputDir, "input-dir", "", "Path to input directory")
 	validateConfig.MarkPersistentFlagRequired("input-dir")
 }
-
