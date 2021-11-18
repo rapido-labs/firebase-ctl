@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -149,11 +148,11 @@ func getFirebaseApp(ctx context.Context) (*firebase.App, error) {
 func GetClientStore(ctx context.Context) (*ClientStore, error) {
 	firebaseApp, err := getFirebaseApp(ctx)
 	if err != nil {
-		return &ClientStore{remoteConfigClient: nil, customFs: &customFs{afero.NewOsFs()}} , fmt.Errorf("error creating firebase remote config app: %v", err.Error()))
+		return &ClientStore{remoteConfigClient: nil, customFs: &customFs{afero.NewOsFs()}} , fmt.Errorf("error creating firebase remote config app: %v", err.Error())
 	}
 	client, err := firebaseApp.RemoteConfig(ctx)
 	if err != nil {
-		return &ClientStore{remoteConfigClient: client, customFs: &customFs{afero.NewOsFs()}},  fmt.Errorf("error creating firebase remote config client: %v", err.Error()))
+		return &ClientStore{remoteConfigClient: client, customFs: &customFs{afero.NewOsFs()}},  fmt.Errorf("error creating firebase remote config client: %v", err.Error())
 	}
 	return &ClientStore{remoteConfigClient: client, customFs: &customFs{afero.NewOsFs()}}, nil
 }
