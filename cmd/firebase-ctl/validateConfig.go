@@ -16,9 +16,10 @@ var validateConfig = &cobra.Command{
 	Short: "validate remote-config by performing a dry-run",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-
+		isRemoteValidationEnabled := true
 		clientStore, err := firebase.GetClientStore(ctx)
 		if err != nil {
+			isRemoteValidationEnabled = false
 			log.Printf("%serror getting firebase app :%s %s", utils.Red, err.Error(), utils.Reset)
 			log.Printf("%sremote will not be available%s", utils.Red, utils.Reset)
 		}
@@ -36,6 +37,9 @@ var validateConfig = &cobra.Command{
 			return
 		}
 		log.Printf("%sConfigValidation: Local validation successful %s", utils.Green, utils.Reset)
+		if !isRemoteValidationEnabled {
+			return
+		}
 		if _, err := config.GetFirebaseConfig(); err != nil {
 			log.Printf("cannot initiate remoteConfigClient: %s", err.Error())
 		}
