@@ -3,17 +3,18 @@ package firebase
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/rapido-labs/firebase-admin-go/v4/remoteconfig"
 	"github.com/rapido-labs/firebase-ctl/internal/model"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 type ClientMock struct {
@@ -81,7 +82,7 @@ func (c *ClientTestSuite) TestBackupToFsSuccess() {
 	cs := ClientStore{remoteConfigClient: c.mock, customFs: &customFs{tempFs}}
 	dummyResponse := &remoteconfig.Response{
 		RemoteConfig: &remoteconfig.RemoteConfig{
-			Conditions: []remoteconfig.Condition{remoteconfig.Condition{
+			Conditions: []remoteconfig.Condition{{
 				Expression: "hello",
 				Name:       "there",
 				TagColor:   remoteconfig.Blue,
@@ -121,7 +122,7 @@ func (c *ClientTestSuite) TestBackupToFsFailureBecauseFSErrors() {
 	cs := ClientStore{remoteConfigClient: c.mock, customFs: &customFs{fs: tempFs}}
 	dummyResponse := &remoteconfig.Response{
 		RemoteConfig: &remoteconfig.RemoteConfig{
-			Conditions: []remoteconfig.Condition{remoteconfig.Condition{
+			Conditions: []remoteconfig.Condition{{
 				Expression: "hello",
 				Name:       "there",
 				TagColor:   remoteconfig.Blue,
@@ -208,13 +209,13 @@ func (c *ClientTestSuite) TestGetLocalConfig() {
 
 func (c *ClientTestSuite) TestBackup() {
 	configToWrite := remoteconfig.RemoteConfig{
-		Conditions: []remoteconfig.Condition{remoteconfig.Condition{
+		Conditions: []remoteconfig.Condition{{
 			Expression: "a==b",
 			Name:       "test_name",
 			TagColor:   remoteconfig.Blue,
 		}},
 		Parameters: map[string]remoteconfig.Parameter{
-			"string": remoteconfig.Parameter{
+			"string": {
 				ConditionalValues: nil,
 				DefaultValue: &remoteconfig.ParameterValue{
 					ExplicitValue:   "test_value",
@@ -222,7 +223,7 @@ func (c *ClientTestSuite) TestBackup() {
 				},
 				Description: "test_description",
 			},
-			"json": remoteconfig.Parameter{
+			"json": {
 				ConditionalValues: nil,
 				DefaultValue: &remoteconfig.ParameterValue{
 					ExplicitValue:   "{}",
@@ -252,7 +253,7 @@ func (c *ClientTestSuite) TestBackup() {
 	localConfig, err := cs.GetLocalConfig("test")
 	assert.NoError(c.T(), err)
 	assert.Equal(c.T(), configToWrite.Conditions, localConfig.ToRemoteConfig().Conditions)
-	assert.Equal(c.T(), configToWrite.Parameters,localConfig.ToRemoteConfig().Parameters)
+	assert.Equal(c.T(), configToWrite.Parameters, localConfig.ToRemoteConfig().Parameters)
 
 }
 
