@@ -1,12 +1,13 @@
 package firebase
 
 import (
-	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type FsTestSuite struct {
@@ -17,9 +18,9 @@ type FsTestSuite struct {
 func (c *FsTestSuite) SetupTest() {
 	c.fs = afero.NewMemMapFs()
 
-	c.fs.Mkdir(correctJsonsDir, 0644)
+	c.fs.Mkdir(correctJsonDir, 0644)
 	c.fs.MkdirAll(filepath.Join(wrongJsonDir, "test"), 0644)
-	f, _ := c.fs.OpenFile(filepath.Join(correctJsonsDir, "1.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
+	f, _ := c.fs.OpenFile(filepath.Join(correctJsonDir, "1.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	defer f.Close()
 	f.WriteString("{}")
 	g, _ := c.fs.OpenFile(filepath.Join(wrongJsonDir, "1.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
@@ -27,21 +28,20 @@ func (c *FsTestSuite) SetupTest() {
 	g.WriteString("{")
 }
 
-const correctJsonsDir = "correct-json"
+const correctJsonDir = "correct-json"
 const wrongJsonDir = "wrong-json"
-const testDir = ""
 
 func (c *FsTestSuite) TestReadJsonFromFile() {
 	customFs := customFs{fs: c.fs}
 
 	c.T().Run("Should unmarshal successfully", func(t *testing.T) {
 		sampleMap := make(map[string]interface{})
-		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonsDir, "1.json"), &sampleMap)
+		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonDir, "1.json"), &sampleMap)
 		assert.NoError(t, err)
 	})
 	c.T().Run("Should exit because invalid file", func(t *testing.T) {
 		sampleMap := make(map[string]interface{})
-		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonsDir, "2.json"), &sampleMap)
+		err := customFs.UnmarshalFromFile(filepath.Join(correctJsonDir, "2.json"), &sampleMap)
 		assert.Contains(t, err.Error(), "does not exist")
 	})
 
@@ -66,7 +66,7 @@ func (c *FsTestSuite) TestReadDirAndUnMarshal() {
 	customFs := customFs{fs: c.fs}
 	c.T().Run("test should scan the directory with only jsons and return all values", func(t *testing.T) {
 
-		err := customFs.UnMarshalFromDir(correctJsonsDir, &map[string]interface{}{})
+		err := customFs.UnMarshalFromDir(correctJsonDir, &map[string]interface{}{})
 		assert.NoError(t, err)
 	})
 	c.T().Run("test should return error when there is invalid json", func(t *testing.T) {
@@ -78,7 +78,7 @@ func (c *FsTestSuite) TestReadDirAndUnMarshal() {
 		assert.Contains(t, err.Error(), "does not exist")
 	})
 	c.T().Run("test should error out when a filepath is passed instead of a directory path", func(t *testing.T) {
-		err := customFs.UnMarshalFromDir(filepath.Join(correctJsonsDir, "1.json"), &map[string]interface{}{})
+		err := customFs.UnMarshalFromDir(filepath.Join(correctJsonDir, "1.json"), &map[string]interface{}{})
 		assert.Error(t, err)
 	})
 }
