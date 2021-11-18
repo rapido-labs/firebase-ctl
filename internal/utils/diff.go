@@ -29,6 +29,7 @@ const (
 	Reset = "\u001B[0m"
 	Red   = "\033[1;31m"
 	Green = "\033[1;32m"
+	Yellow= "\033[33m"
 )
 
 func GetRemoteDiffForConditions(source, remote []remoteconfig.Condition) string {

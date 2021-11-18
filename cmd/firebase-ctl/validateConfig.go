@@ -20,8 +20,7 @@ var validateConfig = &cobra.Command{
 		clientStore, err := firebase.GetClientStore(ctx)
 		if err != nil {
 			isRemoteValidationEnabled = false
-			log.Printf("%serror getting firebase app :%s %s", utils.Red, err.Error(), utils.Reset)
-			log.Printf("%sremote will not be available%s", utils.Red, utils.Reset)
+			log.Printf("%scould not find google application credentials. remote validation will not be available%s", utils.Yellow, utils.Reset)
 		}
 		localConfig, err := clientStore.GetLocalConfig(inputDir)
 		if err != nil {
