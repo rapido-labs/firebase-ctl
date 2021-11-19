@@ -8,4 +8,4 @@ import (
 func main() {
 	log.SetOutput(os.Stdout)
 	Execute()
-}
+
