@@ -42,3 +42,5 @@ This command applies the remote-config in the input-dir
 ```shell
 firebase-ctl apply remote-config --input-dir input-dir
 ```
+
+test
