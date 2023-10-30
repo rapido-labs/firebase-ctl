@@ -29,7 +29,7 @@ func (f *customFs) UnMarshalFromDir(dirName string, data interface{}) error {
 			continue
 		}
 		err = f.UnmarshalFromFile(filepath.Join(dirName, fileInfo.Name()), data)
-		if err != nil {
+		if err != nil && err.Error() != "EOF"{
 			errs = append(errs, err)
 		}
 	}
