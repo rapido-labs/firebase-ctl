@@ -42,8 +42,32 @@ func GetRemoteDiffForConditions(source, remote []remoteconfig.Condition) string 
 
 func GetRemoteDiffForParameters(source, remote map[string]remoteconfig.Parameter) string {
 	diff := cmp.Diff(remote, source)
-	greenDiff := strings.ReplaceAll(diff, "\n+", "\n"+Green)
+	maskedString := maskSecrets(diff)
+	greenDiff := strings.ReplaceAll(maskedString, "\n+", "\n"+Green)
 	redDiff := strings.ReplaceAll(greenDiff, "\n-", "\n"+Red)
 	finalDiff := strings.ReplaceAll(redDiff, "\n", Reset+"\n")
 	return finalDiff
+}
+
+func maskSecrets(input string) string {
+    lines := strings.Split(input, "\n")
+    maskedOutput := ""
+    isMultiLineSecretJson := false
+
+    for _, line := range lines {
+        keyValue := strings.SplitN(line, ":", 2)
+        if len(keyValue) > 1 {
+            if isMultiLineSecretJson || strings.Contains(line, "SEC_") {
+                keyValue[1] = "*******"
+                if strings.Contains(line, "ExplicitValue"){
+                    isMultiLineSecretJson = false
+                }else{
+                    isMultiLineSecretJson = true
+                }
+            }
+        }
+        maskedOutput += "\n" + strings.Join(keyValue, ":")
+    }
+
+    return maskedOutput
 }
