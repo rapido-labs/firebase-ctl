@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -74,6 +75,15 @@ func (cs *ClientStore) GetLocalConfig(dir string) (*model.Config, error) {
 
 	parametersDirPath := filepath.Join(dir, config.ParametersDir)
 	err = cs.customFs.UnMarshalFromDir(parametersDirPath, &(remoteConfig.Parameters))
+	if err != nil {
+		return remoteConfig, err
+	}
+
+	secretParametersDirPath := filepath.Join(dir, config.SecretParametersDir)
+	if _, err := os.Stat(secretParametersDirPath); !os.IsNotExist(err) {
+		err = cs.customFs.UnMarshalFromDir(secretParametersDirPath, &(remoteConfig.Parameters))
+		return remoteConfig, err
+	}
 	return remoteConfig, err
 }
 func (cs *ClientStore) pushConfigToRemote(rc remoteconfig.RemoteConfig, validateOnly bool) error {
